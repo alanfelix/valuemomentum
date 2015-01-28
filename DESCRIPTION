@@ -1,0 +1,16 @@
+Package: valueandmomentum
+Type: Package
+Title: R Package to replicate and extend the results of the AQR Paper “Value and Momentum everywhere”
+Version: 0.1
+Date: 2015-01-19
+Author: Eugene Choe and Thomas Cifrino
+Maintainer: <ec7@williams.edu>
+Description: This is a package holding the functions and markdown that replicate the AQR Paper “Value and Momentum everywhere”. This package was done as the final project for the Williams College winter study course:”Quantitative Equity Analysis”
+License: none?
+VignetteBuilder: knitr
+Suggests:
+    knitr
+Depends:
+  curl,
+  xlsx,
+  lubridate
