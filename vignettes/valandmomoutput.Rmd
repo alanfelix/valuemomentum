@@ -4,51 +4,257 @@ author: "Eugene Choe, Thomas Cifrino"
 date: "January 28, 2015"
 output: html_document
 ---
-```{r,message=FALSE,results='hide',echo=FALSE}
+```{r init,message=FALSE,results='hide',echo=FALSE}
 library("valuemomentum")
-```
-```{r,cache=TRUE,message=FALSE,results = 'hide',echo=FALSE}
-#x<-getdata()
-portfolios<-read.xlsx("portfolios.xlsx",1,rowIndex=21:537)
-  portfolios$DATE <- as.Date(portfolios$DATE, "%y-%m-%d")
-  portfolios$NA.<-NULL
-  factors<-read.xlsx("factors.xlsx",1,rowIndex=22:538)
-  factors$DATE <- as.Date(factors$DATE, "%y-%m-%d")
-  factors$NA.<-NULL
-  x<-cbind(portfolios,factors)
-  x[50]<-NULL
-table1<-compiletable1(x)
-table2<-compiletable2(x)
-corr1<-panel1corr(x)
-corr2<-panel2corr(x)
-```
-
-```{r,message=FALSE,echo=FALSE,results = 'asis'}
-print("US")
+library("knitr")
+ x<-getdata()
+table1<-compiletable1(x,1983:2014)
+table2<-compiletable2(x,1983:2014)
+table1<-round(table1,2)
+table2<-round(table2,2)
+corr1<-panel1corr(x,1983:2014)
+corr2<-panel2corr(x,1983:2014)
+corr1<-round(corr1,2)
+corr2<-round(corr2,2)
 table11<-table1[,1:12]
-print("UK")
 table12<-table1[,13:24]
 table13<-table1[,25:36]
 table14<-table1[,37:48]
 table15<-table1[,49:60]
-kable(table11)
-kable(table12)
-kable(table13)
-kable(table14)
-kable(table15)
-```
-
-
-```{r,message=FALSE,echo=FALSE,results = 'asis'}
 table21<-table2[,1:12]
 table22<-table2[,13:24]
 table23<-table2[,25:36]
 table24<-table2[,37:48]
 table25<-table2[,49:60]
 table26<-table2[,61:72]
+columnnames<-c("   Value P1    ","    Value P2    ","   Value P3    ","  Value P3-P1  "," Value Factor  ","  Momentum P1  ","  Momentum P2  ","  Momentum P3  ","Momentum P3-P1 ","Momentum Factor","  50/50 P3-P1  "," 50/50 Factor  ")
+colnames(table11)<-columnnames
+colnames(table12)<-columnnames
+colnames(table13)<-columnnames
+colnames(table14)<-columnnames
+colnames(table15)<-columnnames
+
+colnames(table21)<-columnnames
+colnames(table22)<-columnnames
+colnames(table23)<-columnnames
+colnames(table24)<-columnnames
+colnames(table25)<-columnnames
+colnames(table26)<-columnnames
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Eugene Choe (ec7@williams.edu) and Thomas Cifrino (trc39@williams.edu) are currently students at Williams College and worked on this paper under Visiting Alumni Professor, David Kane as part of a one month winter course: Quantitative Equity Analysis. We would like to thank the Professor David Kane and the teaching fellow Yuanchu Dang for their enthusiasm and knowledge that contributed much to this class. The code used to produce the results in the paper was written in R and is available on the Github account (eugene-choe) under the public repository (https://github.com/eugene-choe/valuemomentum). Feel free to contact either of us.   
+\pagebreak
+
+##Abstract
+We partially replicated “Value and Momentum Everywhere” by Asness, Moskowitz, and Heje-Pederson using data from AQR. Our analysis confirmed the findings of the original authors: that value and momentum strategies demonstrate co-movement with similar strategies within and across asset classes. We also confirmed that value and momentum strategies are negatively correlated with each other. Finally, we extended our analysis using data from the St. Louis Federal Reserve (FRED) to judge the effect of recession risk on the correlation. This analysis revealed a link between greater recession risk and weaker correlation strength.
+\pagebreak
+
+##Introduction
+
+“Value and Momentum Everywhere” is a research paper published by three quantitative analysts at AQR: Clifford S. Asness, Tobias J. Moskowitz, and Lasse Heje. Pederson. Respectively,  Asness is the founding partner,Moskowitz is a consultant and Pederson is a principal for the company. AQR publishes their data that they use on their papers on the Internet for others to use to replicate their analysis.
+ 
+Their analysis used a collection of data comprised of forty years worth of monthly returns from various portfolios formed by the analysts. Half of the portfolios use a longer term, value-based strategy. This strategy focuses on choosing assets with high book-to-market value ratios. The remaining portfolios use a momentum strategy, which relies on price fluctuations in recent history(such as 10-week) to forecast whether or not an asset will continue to gain value.
+ 
+The authors note that most research on market anomalies focuses overwhelmingly on the equity market within the United States. Examination of value and momentum in other markets is uncommon and it is usually done in isolation, without respect to other markets or assets. The authors constructed their portfolios in eight different markets so as to analyze the strategies and how they interact across markets and asset classes. The eight markets in which the portfolios are based are the US, UK, EU, and Japanese equity markets, country equity index futures, bonds, FOREX, and commodities.
+ 
+The authors describe the findings contained within the paper as “striking.” Analyzing value and momentum strategies across asset classes revealed positive co-movement between like strategies in unrelated markets. It also revealed a strong negative correlation between value strategies and momentum strategies. This correlation exists within the individual market as well as across them. This means that in theory one should be able to combine both strategies for optimal strategy.
+           
+We attempted to replicate some of the finding, specifically the first table which gives the main findings within the paper through data analysis in R. AQR publishes all of their data on their website so anyone can reproduce their findings. However, AQR continues to add to the data frames as time goes on and have changed the portfolio structure since the paper was published in 2011.  Thus, the raw data used in our analysis is comprised of entirely different values than the data used in the AQR paper. Even with these differences, we were still able to replicate to confirm the co-variation across markets and negative correlation between value and momentum strategies. Then we looked at the correlations in conjunction with historical US recession probabilities to see if we could gain further insight, from which we learned that this negative correlation effect is much stronger during low recession probability years
+##Data
+
+The first four markets analyzed were the equity markets in the United States, the United Kingdom, continental Europe, and Japan. The returns on US stock are measured by taking all common equities with Compustat values and at least twelve months of returns between January 1972 and 2014. From these equities, the authors removed any ADRs, REITs, financials, close-ended funds, foreign shares, and stocks with share prices under a dollar. The remaining stocks are ranked from highest to lowest by total market capitalization. The top stocks making up 90% of the stock market’s capitalization make the final cut. The remaining three sets of equities go through the same selection process, with the only difference being that Datastream, not Compustat, provided the values. The authors note that using a smaller selection of stocks like they did allows for more liquidity in their working data universe. This provides a more conservative prediction when compared to a larger, less liquid set of securities. For both Momentum and Value, they were divided into 3 further portfolios, with P3 representing the highest return assets and P1 representing the lowest return assets from the assets selected through the process outlined. There are also "factor" portfolios: zero investment porfolios that weighted each asset on its ranks in both approaches.
+
+The remaining four markets analyzed were global equity indicies, currencies, bonds, and commodities. The global equity data was taken from eighteen separate countries: Australia, Austria, Belgium, Canada, Denmark, France Germany Hong Kong, Italy, Japan, the Netherlands, Norway, Portugal, Spain, Sweden, Switzerland, the UK, and the US. MSCI as well as Bloomberg provided the values. Data on currencies covered ten different countries and was acquired from MSCI. Global bond data covered the same ten countries as currencies. Bloomberg and Morgan Markets reported the index returns. Finally, commodity data was acquired from a number of different exchanges. These included the LME, ICE, CME, CBOT, NYMEX, COMEX, NYBOT, and TOCOM.
+
+Due to lack of access to data, whereas the original returns were adjusted for with a 1-month tbillrate, this wasn't done to our replication. Due to the fact that it is a correlation that we are looking for, the lack of such a small operation on the whole data set didn't affect our results. The original paper also showed alpha returns calculated from MSCI equity indexes specific to those markets that we couldn't access. We also chose to focus our whole paper from the period 1972:2014, as this was where the data was complete across all ranges.
+
+##Co-movement of Value, Momentum across Analyzed Asset Classes
+####Table1:Performance of Value and Momentum Portfolios across Markets and Asset Classes
+Table 1 is a partial replication of Table I in the original paper. It catalogs the percent return for each portfolio constructed (P1-P3) using each investing strategy (value and momentum). It also contains a column for high minus low spreads (P3-P1), as well as one for a rank-weighted factor portfolio (factor). The Table is broken up into eight sub-tables, with each section representing a different asset market.Even with the newly updated portfolios and two further years of data from AQR, we were able to achieve findings similar to the original authors. We consistently find varying degrees of co-movement between like strategies. The 50/50 data is a 50/50 split of the momentum and value portfolios.This phenomenon manifests itself both within the same asset markets as well as across them.
+
+***
+US STOCKS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
 kable(table11)
+```
+UK STOCKS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
 kable(table12)
+```
+EUROPE STOCKS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
 kable(table13)
+```
+JAPAN STOCKS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
 kable(table14)
+```
+GLOBAL STOCKS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
 kable(table15)
 ```
+CNTRY INDICES
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table21)
+```
+CURRENCIES
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table22)
+```
+FIXED INCOME
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table23)
+```
+COMMODITIES
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table24)
+```
+GLBL OTHERASSTS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table25)
+```
+GLBL ALLASSTS
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(table26)
+```
+```{r,message=FALSE,results='hide',echo=FALSE}
+corr1odd<-corr1[c(1,3,5,7,9)]
+corr1even<-corr1[c(2,4,6,8,10)]
+corr2odd<-corr2[c(1,3,5,7,9,11)]
+corr2even<-corr2[c(2,4,6,8,10,12)]
+corrodd<-c(corr1odd,corr2odd)
+correven<-c(corr1even,corr2even)
+corrchart<-cbind(corrodd,correven)
+corrnames<-c("US Stocks","UK Stocks","Europe Stocks","Japan Stocks","Global Stocks","Country Indicies","Currencies","Fixed Income","Commodities","Global Other Assets","Global All Assets")
+corrchart<-cbind(corrnames,corrchart)
+colnames(corrchart)<-c("type","correlation between P3-P1","correlation between factor")
+```
+***
+While both strategies “work” as evidenced by the positive returns shown in the table, it is interesting to note that the 50/50 factor portfolio for all global assists has the highest Sharpe ratio out of the entire data set. This confirms the initial paper’s position: that diversity in both nature of assets invested as well as investing strategies is necessary to maximize returns.
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+####Table2:Correlations between Value and Momentum Portfolios
+Table 2 is another partial replication of Table 1 in the original paper that shows concisely the negative correlations present between the portfolio3-portfolio1 columns for momentum and value and also the factor portfolios
+***
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(corrchart)
+```
+```{r,message=FALSE,results='hide',echo=FALSE}
+recessprob<-"http://research.stlouisfed.org/fred2/data/RECPROUSM156N.csv" #import recession data
+download.file(recessprob,"recessprob.csv")
+recessprobdata<-read.csv("recessprob.csv")
+recessprobdata$DATE<-as.Date(as.character(recessprobdata$DATE),"%Y-%m-%d")
+recessprobdata<-recessprobdata[-(1:187),]
+yearlyaverage<-function(yearvalue,colnumber,datatable)
+{
+  yearreturn<-mean(datatable[year(datatable$DATE)==yearvalue,colnumber],na.rm=TRUE)
+  return(yearreturn)
+}
+recessionyears<-sapply(1983:2014,yearlyaverage,colnumber=2,datatable=recessprobdata) #organise into average for year
+a<-data.frame(1983:2014,recessionyears)
+y<-subset(a,a$recessionyears>=0.1)
+z<-subset(a,a$recessionyears<0.1)
+y<-y[1]
+y<-as.vector(y)
+y<-y$X1983.2014
+z<-z[1] #extract years
+z<-as.vector(z)
+z<-z$X1983.2014
+corr3<-panel1corr(x,y)
+corr4<-panel2corr(x,y)
+corr3<-round(corr3,2)
+corr4<-round(corr4,2)
+corr3odd<-corr3[c(1,3,5,7,9)]
+corr3even<-corr3[c(2,4,6,8,10)]
+corr4odd<-corr4[c(1,3,5,7,9,11)]
+corr4even<-corr4[c(2,4,6,8,10,12)]
+corrodd2<-c(corr3odd,corr4odd)
+correven2<-c(corr3even,corr4even)
+corrchart2<-cbind(corrodd2,correven2)
+corr5<-panel1corr(x,z)
+corr6<-panel2corr(x,z)
+corr5<-round(corr5,2)
+corr6<-round(corr6,2)
+corr5odd<-corr5[c(1,3,5,7,9)]
+corr5even<-corr5[c(2,4,6,8,10)]
+corr6odd<-corr6[c(1,3,5,7,9,11)]
+corr6even<-corr6[c(2,4,6,8,10,12)]
+corrodd3<-c(corr5odd,corr6odd)
+correven3<-c(corr5even,corr6even)
+corrchart3<-cbind(corrodd3,correven3)
+corrnames<-c("US Stocks","UK Stocks","Europe Stocks","Japan Stocks","Global Stocks","Country Indicies","Currencies","Fixed Income","Commodities","Global Other Assets","Global All Assets")
+corrchart2<-cbind(corrnames,corrchart2)
+corrchart3<-cbind(corrnames,corrchart3)
+colnames(corrchart2)<-c("type","correlation between P3-P1","correlation between factor")
+colnames(corrchart3)<-c("type","correlation between P3-P1","correlation between factor")
+```
+***
+We then chose to extend this paper by possibly looking at other factors that could affect these correlations, similar to how the original paper later looked at how liquidity shocks affected the results. We chose to do this by looking at US recession probabilities[2] from FRED, which would give us a good quantitative measure of recessionary symptoms/effects and was easy to find for free. While it is US recessionary data, historically US recessions have a worldwide effect, so we considered this still to be a good study.
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+####Table3:Correlations During High Recessionary Probability Years
+Table 3 is a repetition of Table 2 but for when the average monthly recession probability for a year was higher than 10 percent
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+***
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(corrchart2)
+```
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+***
+####Table4:Correlations During Low Recessionary Probability Years
+Table 3 is a repetition of Table 2 but for when the average monthly recession probability for a year was lower than 10 percent
+***
+```{r,message=FALSE,echo=FALSE,results = "asis"}
+kable(corrchart3)
+```
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+We found that, for most asset classes, the correlation between value and momentum was stronger in low recession probability years than it was in higher ones. This was shown most significantly in the global equities market. There are likely multiple causes for this behavior, but one possibility that comes to mind is the resulting liquidity shock that often accompanies a recession.   This means that during non-recessionary periods, it makes even more sense for investors to combine value and momentum strategies for maximal gains.
+Also worthy of note was the positive correlation between momentum and value strategies for commodities during low recession risk years. We were puzzled by this significant outlier in the data, and believe it warrants an analysis all on its own.We speculate that it could be due to the speculative nature of commodity valuation, meaning that a valuation strategy for commodities might be closer to momentum strategies as compared to other asset classes
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+##Conclusion
+Asness, Moskowitz, and Heje-Pederson find co-movement among like investment strategies, regardless of asset class. They also identify a strong negative correlation between value strategies and momentum strategies. Both strategies are capable of providing positive returns, but they are most effective when used together to add diversity to a portfolio. We were able to replicate the findings of the original authors using data from AQR’s website, even with the addition of three years worth of new data (2011-2014). We were also able to analyze the effect recession risk had on the correlations used data taken from the FRED website, discovering a link between the strength of the value-momentum correlation and the yearly risk of recession.
+```{r,message=FALSE,results='hide',echo=FALSE}
+```
+###Citation
+
+* [1] Asness, Clifford S., Tobias J. Moskowitz, and Lasse Heje Pedersen. "Value andMomentum Everywhere." The Journal of Finance LXVIII, no. 3 (2013): 929-85.
+ 
+* [2] Piger, Jeremy Max and Chauvet, Marcelle, Smoothed U.S. Recession Probabilities[RECPROUSM156N], retrieved from FRED, Federal Reserve Bank of St. Louis https://research.stlouisfed.org/fred2/series/RECPROUSM156N/, January 28, 2015.
+ 
+* [3] R Core Team, “R: A Language and Environment for Statistical Computing.” R Foundation for Statistical Computing, Vienna, Austria. 2014. http://www.R-project.org
+

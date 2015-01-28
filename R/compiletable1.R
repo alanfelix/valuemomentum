@@ -1,4 +1,4 @@
-compiletable1<-function(a)
+compiletable1<-function(a,b)
 {
   x<-a
   panel1<-x[,c(1,2,3,4,56,5,6,7,57,8,9,10,58,11,12,13,59,14,15,16,60,17,18,19,61,20,21,22,62,23,24,25,63)]
@@ -38,10 +38,10 @@ compiletable1<-function(a)
   
   panel1<-panel1[,c(1,2,3,4,42,5,6,7,8,43,9,52,53,10,11,12,44,13,14,15,16,45,17,54,55,18,19,20,46,21,22,23,24,47,25,56,57,26,27,28,48,29,30,31,32,49,33,58,59,34,35,36,50,37,38,39,40,51,41,60,61)]
   columnnames<-colnames(panel1)[2:61]
-  means<- sapply(2:61,overallmean,yearrange=1983:2014,datatable2=panel1)
-  deviations<-sapply(2:61,overallsd,x=1983:2014,datatable3=panel1)
-  tstats<-sapply(2:61,overalltstat,x=1983:2014,datatable4=panel1)
-  sharpes<-sapply(2:61,sharpe,x=1983:2014,datatable=panel1)
+  means<- sapply(2:61,overallmean,yearrange=b,datatable2=panel1)
+  deviations<-sapply(2:61,overallsd,x=b,datatable3=panel1)
+  tstats<-sapply(2:61,overalltstat,x=b,datatable4=panel1)
+  sharpes<-sapply(2:61,sharpe,x=b,datatable=panel1)
   panel1table<-rbind(means,deviations,tstats,sharpes)
   colnames(panel1table)<-columnnames
   return(panel1table)

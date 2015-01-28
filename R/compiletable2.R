@@ -1,4 +1,4 @@
-compiletable2<-function(a)
+compiletable2<-function(a,b)
 {
   x<-a
   panel2<-
@@ -63,11 +63,11 @@ compiletable2<-function(a)
   panel2<-panel2[,c(1,2,3,4,50,5,6,7,8,51,9,62,63,10,11,12,52,13,14,15,16,53,17,64,65,18,19,20,54,21,22,23,24,55,25,66,67,26,27,28,56,29,30,31,32,57,33,68,69,34,35,36,58,37,38,39,40,59,41,70,71,42,43,44,60,45,46,47,48,61,49,72,73)]
   
   columnnames2<-colnames(panel2)[2:73]
-  means2<- sapply(2:73,overallmean,yearrange=1983:2014,datatable2=panel2)
-  deviations2<-sapply(2:73,overallsd,x=1983:2014,datatable3=panel2)
-  tstats2<-sapply(2:73,overalltstat,x=1983:2014,datatable4=panel2)
-  sharpes2<-sapply(2:73,sharpe,x=1983:2014,datatable=panel2)
-  panel2table<-rbind(means2,deviations2,tstats2,sharpes2)
+  means<- sapply(2:73,overallmean,yearrange=b,datatable2=panel2)
+  deviations<-sapply(2:73,overallsd,x=b,datatable3=panel2)
+  tstats<-sapply(2:73,overalltstat,x=b,datatable4=panel2)
+  sharpes<-sapply(2:73,sharpe,x=b,datatable=panel2)
+  panel2table<-rbind(means,deviations,tstats,sharpes)
   colnames(panel2table)<-columnnames2
   return(panel2table)
 }
