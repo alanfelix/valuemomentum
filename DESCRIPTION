@@ -1,16 +1,18 @@
-Package: valueandmomentum
+Package: valuemomentum
 Type: Package
-Title: R Package to replicate and extend the results of the AQR Paper “Value and Momentum everywhere”
-Version: 0.1
-Date: 2015-01-19
+Title: Example Package for Students to Fork From
+Version: 0.1.2
+Date: 2015-01-22
 Author: Eugene Choe and Thomas Cifrino
-Maintainer: <ec7@williams.edu>
-Description: This is a package holding the functions and markdown that replicate the AQR Paper “Value and Momentum everywhere”. This package was done as the final project for the Williams College winter study course:”Quantitative Equity Analysis”
-License: none?
+Maintainer: <ddk1@williams.edu>
+Description: This is a simple package, mostly developped in class. I am
+  placing it on github so that students have a starting point for their
+  own packages.
+License: GPL-3
+LazyData: TRUE
 VignetteBuilder: knitr
 Suggests:
     knitr
 Depends:
-  curl,
-  xlsx,
-  lubridate
+    xlsx,
+    lubridate

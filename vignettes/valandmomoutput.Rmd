@@ -1,0 +1,20 @@
+---
+title: "Value and Momentum Everywhere-A Partial Replication of Asness,Moskowitz,Pederson(2012)"
+author: "Eugene Choe, Thomas Cifrino"
+date: "January 28, 2015"
+output: html_document
+---
+```{r,message=FALSE,results='hide'}
+library("valuemomentum")
+```
+```{r,cache=TRUE,message=FALSE,results = 'hide'}
+x<-getdata()
+table1<-compiletable1(x)
+table2<-compiletable2(x)
+corr1<-panel1corr(x)
+corr2<-panel2corr(x)
+```
+
+```{r,message=FALSE}
+kable(table1,format = "html")
+```
