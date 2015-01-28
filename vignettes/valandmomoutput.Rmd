@@ -4,17 +4,51 @@ author: "Eugene Choe, Thomas Cifrino"
 date: "January 28, 2015"
 output: html_document
 ---
-```{r,message=FALSE,results='hide'}
+```{r,message=FALSE,results='hide',echo=FALSE}
 library("valuemomentum")
 ```
-```{r,cache=TRUE,message=FALSE,results = 'hide'}
-x<-getdata()
+```{r,cache=TRUE,message=FALSE,results = 'hide',echo=FALSE}
+#x<-getdata()
+portfolios<-read.xlsx("portfolios.xlsx",1,rowIndex=21:537)
+  portfolios$DATE <- as.Date(portfolios$DATE, "%y-%m-%d")
+  portfolios$NA.<-NULL
+  factors<-read.xlsx("factors.xlsx",1,rowIndex=22:538)
+  factors$DATE <- as.Date(factors$DATE, "%y-%m-%d")
+  factors$NA.<-NULL
+  x<-cbind(portfolios,factors)
+  x[50]<-NULL
 table1<-compiletable1(x)
 table2<-compiletable2(x)
 corr1<-panel1corr(x)
 corr2<-panel2corr(x)
 ```
 
-```{r,message=FALSE}
-kable(table1,format = "html")
+```{r,message=FALSE,echo=FALSE,results = 'asis'}
+print("US")
+table11<-table1[,1:12]
+print("UK")
+table12<-table1[,13:24]
+table13<-table1[,25:36]
+table14<-table1[,37:48]
+table15<-table1[,49:60]
+kable(table11)
+kable(table12)
+kable(table13)
+kable(table14)
+kable(table15)
+```
+
+
+```{r,message=FALSE,echo=FALSE,results = 'asis'}
+table21<-table2[,1:12]
+table22<-table2[,13:24]
+table23<-table2[,25:36]
+table24<-table2[,37:48]
+table25<-table2[,49:60]
+table26<-table2[,61:72]
+kable(table11)
+kable(table12)
+kable(table13)
+kable(table14)
+kable(table15)
 ```

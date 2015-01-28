@@ -11,8 +11,7 @@ Description: This is a simple package, mostly developped in class. I am
 License: GPL-3
 LazyData: TRUE
 VignetteBuilder: knitr
-Suggests:
-    knitr
 Depends:
     xlsx,
-    lubridate
+    lubridate,
+    pander

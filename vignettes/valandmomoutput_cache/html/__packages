@@ -4,3 +4,5 @@ xlsxjars
 xlsx
 lubridate
 valuemomentum
+pander
+knitr
